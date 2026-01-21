@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: cpsystem
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/cobranca}
+    username: ${SPRING_DATASOURCE_USERNAME:gustavo}
+    password: ${SPRING_DATASOURCE_PASSWORD:139150}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: ${SPRING_JPA_SHOW_SQL:false}

@@ -1,0 +1,388 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { format } from "date-fns"
+import { ptBR } from "date-fns/locale"
+import { CalendarIcon, Loader2, PencilIcon, ChevronDownIcon } from "lucide-react"
+import * as z from "zod"
+
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { Badge } from "@/components/ui/badge"
+import { updatePayment } from "@/lib/api"
+import { cn } from "@/lib/utils"
+
+interface PaymentDetailsDialogProps {
+  payment: {
+    id: number
+    payerName: string
+    installmentNumber: number
+    totalInstallments: number
+    originalValue: number
+    overdueValue: number
+    dueDate: string
+    paymentDate: string | null
+    paymentStatus: "PENDING" | "PAID" | "PAID_LATE" | "OVERDUE"
+    observation: string
+  }
+  onSuccess: () => void
+}
+
+const formSchema = z.object({
+  originalValue: z.string().min(1, "Valor é obrigatório"),
+  dueDate: z.date(),
+  paymentDate: z.date().optional().nullable(),
+  observation: z.string().optional(),
+})
+
+export function PaymentDetailsDialog({ payment, onSuccess }: PaymentDetailsDialogProps) {
+  const [open, setOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [dueDatePickerOpen, setDueDatePickerOpen] = useState(false)
+  const [paymentDatePickerOpen, setPaymentDatePickerOpen] = useState(false)
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      originalValue: "",
+      observation: "",
+    },
+  })
+
+  // Load payment data when dialog opens
+  useEffect(() => {
+    if (open) {
+      const formattedValue = payment.originalValue.toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+      
+      // Parse dates as local time
+      const [dyear, dmonth, dday] = payment.dueDate.split('-')
+      const dueDate = new Date(parseInt(dyear), parseInt(dmonth) - 1, parseInt(dday))
+      
+      let paymentDate = null
+      if (payment.paymentDate) {
+        const [pyear, pmonth, pday] = payment.paymentDate.split('-')
+        paymentDate = new Date(parseInt(pyear), parseInt(pmonth) - 1, parseInt(pday))
+      }
+
+      form.reset({
+        originalValue: formattedValue,
+        dueDate,
+        paymentDate,
+        observation: payment.observation || "",
+      })
+    }
+  }, [open, payment, form])
+
+  const formatCurrency = (value: string) => {
+    const numbers = value.replace(/\D/g, "")
+    const amount = parseFloat(numbers) / 100
+    return amount.toLocaleString("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+  }
+
+  const getStatusBadge = (status: string) => {
+    const badges = {
+      PAID: <Badge variant="default" className="bg-green-500">Pago</Badge>,
+      PAID_LATE: <Badge variant="default" className="bg-yellow-500">Pago com Atraso</Badge>,
+      OVERDUE: <Badge variant="destructive">Atrasado</Badge>,
+      PENDING: <Badge variant="secondary">Pendente</Badge>,
+    }
+    return badges[status as keyof typeof badges] || null
+  }
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setIsSubmitting(true)
+    
+    try {
+      // Parse currency value (1.234,56 -> 1234.56)
+      const originalValue = parseFloat(
+        values.originalValue.replace(/\./g, "").replace(",", ".")
+      )
+      
+      // Format dates to ISO (YYYY-MM-DD)
+      const dueDate = format(values.dueDate, "yyyy-MM-dd")
+      const paymentDate = values.paymentDate 
+        ? format(values.paymentDate, "yyyy-MM-dd")
+        : undefined
+      
+      await updatePayment(payment.id, {
+        originalValue,
+        dueDate,
+        paymentDate,
+        observation: values.observation || undefined,
+      })
+      
+      // Success - close dialog and refresh
+      setOpen(false)
+      onSuccess()
+    } catch (error) {
+      console.error("Failed to update payment:", error)
+      alert("Erro ao atualizar pagamento. Por favor, tente novamente.")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <PencilIcon className="h-4 w-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Detalhes do Pagamento</DialogTitle>
+          <DialogDescription>
+            Visualize e edite as informações do pagamento
+          </DialogDescription>
+        </DialogHeader>
+        
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4">
+            {/* Read-only Information */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-foreground">Informações do Pagamento</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <FormLabel className="text-sm">Pagador</FormLabel>
+                  <Input value={payment.payerName} readOnly className="bg-muted mt-2" />
+                </div>
+                
+                <div className="space-y-2">
+                  <FormLabel className="text-sm">Parcela</FormLabel>
+                  <Input 
+                    value={`${payment.installmentNumber} / ${payment.totalInstallments}`} 
+                    readOnly 
+                    className="bg-muted mt-2" 
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <FormLabel className="text-sm">Status</FormLabel>
+                <div className="mt-2">
+                  {getStatusBadge(payment.paymentStatus)}
+                </div>
+              </div>
+            </div>
+
+            {/* Editable Values */}
+            <div className="space-y-4 pt-2">
+              <h3 className="text-sm font-semibold text-foreground">Valores</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="originalValue"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Valor Original</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">
+                            R$
+                          </span>
+                          <Input
+                            placeholder="0,00"
+                            className="pl-10"
+                            {...field}
+                            onChange={(e) => {
+                              const formatted = formatCurrency(e.target.value)
+                              field.onChange(formatted)
+                            }}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="space-y-2">
+                  <FormLabel>Valor com Juros</FormLabel>
+                  <Input 
+                    value={payment.overdueValue ? payment.overdueValue.toLocaleString("pt-BR", {
+                      style: "currency",
+                      currency: "BRL"
+                    }) : "---"} 
+                    readOnly 
+                    className="bg-muted" 
+                  />
+                  <p className="text-sm text-muted-foreground">Calculado pelo sistema</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Editable Dates */}
+            <div className="space-y-4 pt-2">
+              <h3 className="text-sm font-semibold text-foreground">Datas</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="dueDate"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col space-y-2">
+                      <FormLabel>Data de Vencimento</FormLabel>
+                      <Popover open={dueDatePickerOpen} onOpenChange={setDueDatePickerOpen}>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-between font-normal h-9",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "dd/MM/yyyy")
+                              ) : (
+                                <span>Selecione uma data</span>
+                              )}
+                              <ChevronDownIcon className="h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            captionLayout="dropdown"
+                            onSelect={(date) => {
+                              field.onChange(date)
+                              setDueDatePickerOpen(false)
+                            }}
+                            fromYear={2020}
+                            toYear={2030}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="paymentDate"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col space-y-2">
+                      <FormLabel>Data de Pagamento</FormLabel>
+                      <Popover open={paymentDatePickerOpen} onOpenChange={setPaymentDatePickerOpen}>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-between font-normal h-9",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "dd/MM/yyyy")
+                              ) : (
+                                <span>Não pago</span>
+                              )}
+                              <ChevronDownIcon className="h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value || undefined}
+                            captionLayout="dropdown"
+                            onSelect={(date) => {
+                              field.onChange(date)
+                              setPaymentDatePickerOpen(false)
+                            }}
+                            fromYear={2020}
+                            toYear={2030}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormDescription>Opcional</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* Observation */}
+            <div className="pt-2">
+              <FormField
+                control={form.control}
+                name="observation"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Observação</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Observações sobre este pagamento"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </form>
+        </Form>
+
+        <DialogFooter className="mt-6">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setOpen(false)}
+            disabled={isSubmitting}
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            onClick={form.handleSubmit(onSubmit)}
+            disabled={isSubmitting}
+          >
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isSubmitting ? "Salvando..." : "Salvar"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
