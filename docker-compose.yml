@@ -6,9 +6,9 @@ services:
     image: postgres:16-alpine
     container_name: cpsystem-db
     environment:
-      POSTGRES_DB: cobranca
-      POSTGRES_USER: gustavo
-      POSTGRES_PASSWORD: 139150
+      POSTGRES_DB: ${POSTGRES_DB:-cobranca}
+      POSTGRES_USER: ${POSTGRES_USER:-gustavo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-139150}
     ports:
       - "5432:5432"
     volumes:
@@ -16,7 +16,7 @@ services:
     networks:
       - cpsystem-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U gustavo -d cobranca"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gustavo} -d ${POSTGRES_DB:-cobranca}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -29,11 +29,13 @@ services:
       dockerfile: Dockerfile
     container_name: cpsystem-backend
     environment:
-      SPRING_PROFILES_ACTIVE: prod
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/cobranca
-      SPRING_DATASOURCE_USERNAME: gustavo
-      SPRING_DATASOURCE_PASSWORD: 139150
-      JAVA_OPTS: "-Xmx512m -Xms256m"
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://postgres:5432/cobranca}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-gustavo}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-139150}
+      SPRING_JPA_SHOW_SQL: ${SPRING_JPA_SHOW_SQL:-false}
+      JAVA_OPTS: ${JAVA_OPTS:--Xmx512m -Xms256m}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost,http://localhost:80}
     depends_on:
       postgres:
         condition: service_healthy
@@ -49,8 +51,8 @@ services:
       dockerfile: Dockerfile
     container_name: cpsystem-frontend
     environment:
-      NODE_ENV: production
-      NEXT_PUBLIC_API_URL: /api/v1
+      NODE_ENV: ${NODE_ENV:-production}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api/v1}
     depends_on:
       - backend
     networks:

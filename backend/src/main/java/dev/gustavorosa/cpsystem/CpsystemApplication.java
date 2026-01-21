@@ -18,13 +18,14 @@ public class CpsystemApplication {
 		return new WebMvcConfigurer() {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
+				// Obter origins permitidos de variável de ambiente
+				String allowedOrigins = System.getenv().getOrDefault(
+					"ALLOWED_ORIGINS",
+					"http://localhost:3000,http://localhost,http://localhost:80"
+				);
+				
 				registry.addMapping("/**")
-						// Aceitar requisições do desenvolvimento local e do Docker/Nginx
-						.allowedOrigins(
-								"http://localhost:3000",      // Desenvolvimento local (Next.js dev server)
-								"http://localhost",            // Produção Docker (via Nginx)
-								"http://localhost:80"          // Explicitamente com porta
-						)
+						.allowedOrigins(allowedOrigins.split(","))
 						.allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
 						.allowedHeaders("*")
 						.allowCredentials(true);

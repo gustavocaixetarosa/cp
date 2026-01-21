@@ -14,17 +14,17 @@ set -e  # Exit on error
 # ==========================================
 
 # AWS S3
-S3_BUCKET="${S3_BUCKET:-cpsystem-backups}"
+S3_BUCKET="${S3_BUCKET:-cpsystem-backups-dev}"
 AWS_REGION="${AWS_REGION:-us-east-1}"
 
 # PostgreSQL
-DB_CONTAINER="cpsystem-db"
-DB_NAME="cobranca"
-DB_USER="gustavo"
-DB_PASSWORD="139150"
+DB_CONTAINER="${DB_CONTAINER:-cpsystem-db}"
+DB_NAME="${DB_NAME:-cobranca}"
+DB_USER="${DB_USER:-gustavo}"
+DB_PASSWORD="${DB_PASSWORD:-139150}"
 
 # Restore settings
-RESTORE_DIR="/tmp/cpsystem-restore"
+RESTORE_DIR="${RESTORE_DIR:-/tmp/cpsystem-restore}"
 LOG_FILE="${LOG_FILE:-/var/log/cpsystem-restore.log}"
 
 # Cores para output

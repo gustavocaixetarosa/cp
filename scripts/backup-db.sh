@@ -14,19 +14,19 @@ set -e  # Exit on error
 # ==========================================
 
 # AWS S3
-S3_BUCKET="${S3_BUCKET:-cpsystem-backups}"
+S3_BUCKET="${S3_BUCKET:-cpsystem-backups-dev}"
 AWS_REGION="${AWS_REGION:-us-east-1}"
 
 # PostgreSQL
-DB_CONTAINER="cpsystem-db"
-DB_NAME="cobranca"
-DB_USER="gustavo"
-DB_PASSWORD="139150"
+DB_CONTAINER="${DB_CONTAINER:-cpsystem-db}"
+DB_NAME="${DB_NAME:-cobranca}"
+DB_USER="${DB_USER:-gustavo}"
+DB_PASSWORD="${DB_PASSWORD:-139150}"
 
 # Backup settings
-BACKUP_DIR="/tmp/cpsystem-backups"
-RETENTION_DAYS=7
-LOCAL_RETENTION_DAYS=3
+BACKUP_DIR="${BACKUP_DIR:-/tmp/cpsystem-backups}"
+RETENTION_DAYS="${RETENTION_DAYS:-7}"
+LOCAL_RETENTION_DAYS="${LOCAL_RETENTION_DAYS:-3}"
 
 # Logs
 LOG_FILE="${LOG_FILE:-/var/log/cpsystem-backup.log}"
