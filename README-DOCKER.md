@@ -58,38 +58,38 @@
 cd /home/gustavorosa/projects/cp
 
 # Construir e iniciar todos os serviços
-docker-compose up -d --build
+docker compose up -d --build
 
 # Ver logs de todos os serviços
-docker-compose logs -f
+docker compose logs -f
 
 # Ver logs de um serviço específico
-docker-compose logs -f nginx
-docker-compose logs -f frontend
-docker-compose logs -f backend
+docker compose logs -f nginx
+docker compose logs -f frontend
+docker compose logs -f backend
 ```
 
 ### Gerenciamento
 ```bash
 # Parar tudo
-docker-compose down
+docker compose down
 
 # Parar e remover volumes (limpa banco de dados)
-docker-compose down -v
+docker compose down -v
 
 # Reiniciar apenas um serviço
-docker-compose restart frontend
-docker-compose restart backend
+docker compose restart frontend
+docker compose restart backend
 
 # Reconstruir após mudanças no código
-docker-compose up -d --build frontend
-docker-compose up -d --build backend
+docker compose up -d --build frontend
+docker compose up -d --build backend
 ```
 
 ### Verificar status
 ```bash
 # Status dos containers
-docker-compose ps
+docker compose ps
 
 # Health check
 curl http://localhost/actuator/health
@@ -158,7 +158,7 @@ Depois, descomente as linhas de SSL no `docker-compose.yml` e atualize `nginx.co
 ### 4. Iniciar na VPS
 ```bash
 cd /home/usuario/seu-projeto
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
 ## 📊 Monitoramento
@@ -166,13 +166,13 @@ docker-compose up -d --build
 ### Logs em tempo real
 ```bash
 # Todos os serviços
-docker-compose logs -f
+docker compose logs -f
 
 # Últimas 100 linhas
-docker-compose logs --tail=100
+docker compose logs --tail=100
 
 # Apenas erros
-docker-compose logs -f | grep -i error
+docker compose logs -f | grep -i error
 ```
 
 ### Recursos
@@ -189,12 +189,12 @@ docker system df
 ### Frontend não conecta no backend
 1. Verifique se `NEXT_PUBLIC_API_URL` está correto
 2. Teste: `curl http://localhost/api/clients`
-3. Veja logs: `docker-compose logs -f nginx`
+3. Veja logs: `docker compose logs -f nginx`
 
 ### Backend não conecta no PostgreSQL
 1. Espere o banco inicializar completamente
-2. Verifique health check: `docker-compose ps`
-3. Veja logs: `docker-compose logs -f postgres`
+2. Verifique health check: `docker compose ps`
+3. Veja logs: `docker compose logs -f postgres`
 
 ### Porta 80 já em uso
 ```bash
@@ -210,7 +210,7 @@ sudo systemctl stop nginx
 
 ```bash
 # Parar tudo e remover volumes
-docker-compose down -v
+docker compose down -v
 
 # Remover imagens não utilizadas
 docker image prune -a

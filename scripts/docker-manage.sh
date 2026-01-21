@@ -66,7 +66,7 @@ EOF
 
 start() {
     print_header "Iniciando CPSystem"
-    docker-compose up -d --build
+    docker compose up -d --build
     print_success "Serviços iniciados!"
     print_info "Frontend: http://localhost"
     print_info "Backend API: http://localhost/api"
@@ -75,46 +75,46 @@ start() {
 
 stop() {
     print_header "Parando CPSystem"
-    docker-compose down
+    docker compose down
     print_success "Serviços parados!"
 }
 
 restart() {
     print_header "Reiniciando CPSystem"
-    docker-compose restart
+    docker compose restart
     print_success "Serviços reiniciados!"
 }
 
 rebuild() {
     print_header "Reconstruindo CPSystem"
     if [ -z "$1" ]; then
-        docker-compose down
-        docker-compose up -d --build
+        docker compose down
+        docker compose up -d --build
     else
-        docker-compose up -d --build "$1"
+        docker compose up -d --build "$1"
     fi
     print_success "Reconstrução completa!"
 }
 
 logs() {
     if [ -z "$1" ]; then
-        docker-compose logs --tail=100
+        docker compose logs --tail=100
     else
-        docker-compose logs --tail=100 "$1"
+        docker compose logs --tail=100 "$1"
     fi
 }
 
 logs_follow() {
     if [ -z "$1" ]; then
-        docker-compose logs -f
+        docker compose logs -f
     else
-        docker-compose logs -f "$1"
+        docker compose logs -f "$1"
     fi
 }
 
 status() {
     print_header "Status dos Containers"
-    docker-compose ps
+    docker compose ps
     echo ""
     print_header "Uso de Recursos"
     docker stats --no-stream --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}"
@@ -130,7 +130,7 @@ health() {
     curl -f http://localhost/actuator/health 2>&1 | grep -q "UP" && print_success "OK" || print_error "FALHOU"
     
     echo -e "\n${YELLOW}PostgreSQL:${NC}"
-    docker-compose exec -T postgres pg_isready -U gustavo > /dev/null 2>&1 && print_success "OK" || print_error "FALHOU"
+    docker compose exec -T postgres pg_isready -U gustavo > /dev/null 2>&1 && print_success "OK" || print_error "FALHOU"
 }
 
 clean() {
@@ -139,7 +139,7 @@ clean() {
     read -p "Tem certeza? (y/N) " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        docker-compose down -v
+        docker compose down -v
         print_success "Limpeza completa!"
     else
         print_info "Operação cancelada"
@@ -152,8 +152,8 @@ clean_all() {
     read -p "Tem certeza? (y/N) " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        docker-compose down -v
-        docker-compose down --rmi all
+        docker compose down -v
+        docker compose down --rmi all
         docker system prune -f
         print_success "Limpeza completa do sistema!"
     else
@@ -200,7 +200,7 @@ case "${1:-help}" in
         fi
         case "$2" in
             restart)
-                docker-compose restart "$1"
+                docker compose restart "$1"
                 ;;
             logs)
                 logs "$1"

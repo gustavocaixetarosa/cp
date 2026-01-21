@@ -348,7 +348,7 @@ docker ps
 
 # Iniciar PostgreSQL
 cd /home/gustavorosa/projects/cp
-docker-compose up -d postgres
+docker compose up -d postgres
 ```
 
 ### Erro: "Unable to locate credentials"
@@ -475,7 +475,7 @@ Para bancos grandes, considere ferramentas como:
 df -h
 
 # Status do Docker
-docker-compose ps
+docker compose ps
 
 # Logs do PostgreSQL
 docker logs cpsystem-db --tail=100
