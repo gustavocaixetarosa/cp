@@ -19,8 +19,13 @@ public class CpsystemApplication {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
 				registry.addMapping("/**")
-						.allowedOrigins("http://localhost:3000")
-						.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+						// Aceitar requisições do desenvolvimento local e do Docker/Nginx
+						.allowedOrigins(
+								"http://localhost:3000",      // Desenvolvimento local (Next.js dev server)
+								"http://localhost",            // Produção Docker (via Nginx)
+								"http://localhost:80"          // Explicitamente com porta
+						)
+						.allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
 						.allowedHeaders("*")
 						.allowCredentials(true);
 			}

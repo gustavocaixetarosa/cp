@@ -1,0 +1,133 @@
+# CPSystem - Exemplos de Cron Jobs para Backup Automático
+#
+# Para adicionar ao seu crontab:
+# 1. Execute: crontab -e
+# 2. Copie e cole uma das linhas abaixo
+# 3. Ajuste o caminho do script conforme necessário
+# 4. Salve e saia
+
+# ==========================================
+# BACKUP DIÁRIO
+# ==========================================
+
+# Todo dia às 02:00 AM (recomendado)
+0 2 * * * /home/gustavorosa/projects/cp/scripts/backup-db.sh >> /var/log/cpsystem-backup.log 2>&1
+
+# Todo dia às 03:00 AM
+0 3 * * * /home/gustavorosa/projects/cp/scripts/backup-db.sh >> /var/log/cpsystem-backup.log 2>&1
+
+# Todo dia às 23:00 (11 PM)
+0 23 * * * /home/gustavorosa/projects/cp/scripts/backup-db.sh >> /var/log/cpsystem-backup.log 2>&1
+
+# Todo dia às 01:30 AM
+30 1 * * * /home/gustavorosa/projects/cp/scripts/backup-db.sh >> /var/log/cpsystem-backup.log 2>&1
+
+# ==========================================
+# BACKUP MÚLTIPLAS VEZES AO DIA
+# ==========================================
+
+# A cada 12 horas (00:00 e 12:00)
+0 */12 * * * /home/gustavorosa/projects/cp/scripts/backup-db.sh >> /var/log/cpsystem-backup.log 2>&1
+
+# A cada 6 horas
+0 */6 * * * /home/gustavorosa/projects/cp/scripts/backup-db.sh >> /var/log/cpsystem-backup.log 2>&1
+
+# Três vezes ao dia (02:00, 10:00, 18:00)
+0 2,10,18 * * * /home/gustavorosa/projects/cp/scripts/backup-db.sh >> /var/log/cpsystem-backup.log 2>&1
+
+# ==========================================
+# BACKUP SEMANAL
+# ==========================================
+
+# Todo domingo às 04:00 AM
+0 4 * * 0 /home/gustavorosa/projects/cp/scripts/backup-db.sh >> /var/log/cpsystem-backup.log 2>&1
+
+# Todo sábado às 02:00 AM
+0 2 * * 6 /home/gustavorosa/projects/cp/scripts/backup-db.sh >> /var/log/cpsystem-backup.log 2>&1
+
+# Segunda e sexta às 03:00 AM
+0 3 * * 1,5 /home/gustavorosa/projects/cp/scripts/backup-db.sh >> /var/log/cpsystem-backup.log 2>&1
+
+# ==========================================
+# BACKUP MENSAL
+# ==========================================
+
+# Primeiro dia do mês às 05:00 AM
+0 5 1 * * /home/gustavorosa/projects/cp/scripts/backup-db.sh >> /var/log/cpsystem-backup.log 2>&1
+
+# Último domingo do mês às 03:00 AM
+0 3 * * 0 [ $(date +\%d) -ge 25 ] && /home/gustavorosa/projects/cp/scripts/backup-db.sh >> /var/log/cpsystem-backup.log 2>&1
+
+# ==========================================
+# FORMATO DO CRON
+# ==========================================
+#
+# ┌───────────── minuto (0 - 59)
+# │ ┌───────────── hora (0 - 23)
+# │ │ ┌───────────── dia do mês (1 - 31)
+# │ │ │ ┌───────────── mês (1 - 12)
+# │ │ │ │ ┌───────────── dia da semana (0 - 7) (0 ou 7 = domingo)
+# │ │ │ │ │
+# * * * * * comando a ser executado
+#
+# Exemplos:
+# * * * * *        = A cada minuto
+# 0 * * * *        = A cada hora (no minuto 0)
+# 0 0 * * *        = Todo dia à meia-noite
+# 0 0 * * 0        = Todo domingo à meia-noite
+# 0 0 1 * *        = Primeiro dia de cada mês à meia-noite
+# 0 */6 * * *      = A cada 6 horas
+# 30 2 * * 1-5     = Seg-Sex às 02:30 AM
+#
+# ==========================================
+# VARIÁVEIS DE AMBIENTE (opcional)
+# ==========================================
+#
+# Você pode definir variáveis no topo do seu crontab:
+#
+# S3_BUCKET=meu-bucket-personalizado
+# AWS_REGION=sa-east-1
+# RETENTION_DAYS=14
+#
+# 0 2 * * * /home/gustavorosa/projects/cp/scripts/backup-db.sh >> /var/log/cpsystem-backup.log 2>&1
+#
+# ==========================================
+# COMANDOS ÚTEIS
+# ==========================================
+#
+# Editar crontab:
+#   crontab -e
+#
+# Listar cron jobs:
+#   crontab -l
+#
+# Remover todos os cron jobs:
+#   crontab -r
+#
+# Ver logs do cron:
+#   grep CRON /var/log/syslog
+#
+# Ver logs do backup:
+#   tail -f /var/log/cpsystem-backup.log
+#
+# Testar cron (executar manualmente):
+#   /home/gustavorosa/projects/cp/scripts/backup-db.sh
+#
+# ==========================================
+# NOTIFICAÇÕES (opcional)
+# ==========================================
+#
+# Receber email em caso de erro (requer mailutils configurado):
+# MAILTO=seu@email.com
+# 0 2 * * * /home/gustavorosa/projects/cp/scripts/backup-db.sh >> /var/log/cpsystem-backup.log 2>&1
+#
+# ==========================================
+# TIMEZONE
+# ==========================================
+#
+# O cron usa o timezone do sistema. Para verificar:
+#   timedatectl
+#
+# Para definir timezone no crontab:
+# CRON_TZ=America/Sao_Paulo
+# 0 2 * * * /home/gustavorosa/projects/cp/scripts/backup-db.sh >> /var/log/cpsystem-backup.log 2>&1

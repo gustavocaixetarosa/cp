@@ -1,4 +1,6 @@
-const API_BASE_URL = 'http://localhost:8080/v1';
+// Em produção (Docker), usa /api/v1 (Nginx faz proxy para backend:8080/v1)
+// Em desenvolvimento, usa http://localhost:8080/v1 (acesso direto ao backend)
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/v1';
 
 export async function fetchClients() {
   const response = await fetch(`${API_BASE_URL}/client`);
