@@ -7,7 +7,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Configuration
 public class WebConfig {
@@ -18,12 +19,30 @@ public class WebConfig {
         final CorsConfiguration config = new CorsConfiguration();
         
         config.setAllowCredentials(true);
-        // Suporta localhost, 127.0.0.1 e IPs da rede local (192.168.x.x)
+        
+        // Obter origins permitidos de variável de ambiente
+        String allowedOriginsEnv = System.getenv().getOrDefault(
+            "ALLOWED_ORIGINS",
+            "http://localhost:3000,http://localhost,http://127.0.0.1:3000"
+        );
+        
+        // Converter string separada por vírgula em lista
+        List<String> allowedOrigins = Arrays.stream(allowedOriginsEnv.split(","))
+            .map(String::trim)
+            .collect(Collectors.toList());
+        
+        // Adicionar padrões para desenvolvimento local (suporte a qualquer porta)
         config.setAllowedOriginPatterns(Arrays.asList(
             "http://localhost:[*]",
             "http://127.0.0.1:[*]",
-            "http://192.168.*:[*]"
+            "http://192.168.*:[*]",
+            "https://localhost:[*]",
+            "https://127.0.0.1:[*]"
         ));
+        
+        // Adicionar origins específicos da variável de ambiente (produção)
+        config.setAllowedOrigins(allowedOrigins);
+        
         config.setAllowedHeaders(Arrays.asList("*"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "OPTIONS", "DELETE", "PATCH"));
         
