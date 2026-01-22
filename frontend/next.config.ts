@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'standalone',
+  // Output standalone apenas em produção (Docker)
+  ...(process.env.NODE_ENV === 'production' && { output: 'standalone' }),
   // Configuração para produção
   poweredByHeader: false,
   compress: true,
