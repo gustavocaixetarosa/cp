@@ -438,10 +438,7 @@ export default function NewPaymentGroupPage() {
                             field.onChange(date)
                             setDatePickerOpen(false)
                           }}
-                          disabled={(date) =>
-                            date < new Date(new Date().setHours(0, 0, 0, 0))
-                          }
-                          fromYear={2020}
+                          fromYear={2015}
                           toYear={2030}
                         />
                       </PopoverContent>
