@@ -49,6 +49,9 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        # Passar variável para o build (necessário para NEXT_PUBLIC_*)
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api/v1}
     container_name: cpsystem-frontend
     environment:
       NODE_ENV: ${NODE_ENV:-production}

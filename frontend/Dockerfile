@@ -21,6 +21,11 @@ COPY . .
 # Instalar todas as dependências (incluindo devDependencies para o build)
 RUN npm ci
 
+# Receber variável de ambiente do docker-compose para o build
+# Variáveis NEXT_PUBLIC_* precisam estar disponíveis durante o build
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+
 # Build da aplicação Next.js (modo standalone para imagem menor)
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
