@@ -133,27 +133,79 @@ git clone seu-repositorio
 cd seu-repositorio
 ```
 
-### 2. Configurar domínio
-Edite `nginx/nginx.conf` e troque `localhost` pelo seu domínio:
-```nginx
-server_name seudominio.com www.seudominio.com;
-```
+### 2. Configurar SSL/HTTPS (Obrigatório para produção)
 
-### 3. SSL/HTTPS (Opcional mas recomendado)
+#### a) Instalar Certbot e obter certificados (se ainda não tiver)
 ```bash
 # Instalar certbot no VPS
+sudo apt update
 sudo apt install certbot
 
-# Gerar certificados
-sudo certbot certonly --standalone -d seudominio.com
+# Parar serviços que usam porta 80 temporariamente
+docker compose down
 
-# Copiar certificados para a pasta nginx
+# Gerar certificados Let's Encrypt
+sudo certbot certonly --standalone -d seudominio.com -d www.seudominio.com
+
+# Resultado: certificados em /etc/letsencrypt/live/seudominio.com/
+```
+
+#### b) Copiar certificados para o projeto
+Use o script automatizado:
+```bash
+cd /caminho/do/projeto
+./scripts/copy-ssl-certs.sh
+```
+
+Ou manualmente:
+```bash
 mkdir -p nginx/ssl
 sudo cp /etc/letsencrypt/live/seudominio.com/fullchain.pem nginx/ssl/
 sudo cp /etc/letsencrypt/live/seudominio.com/privkey.pem nginx/ssl/
+sudo chown -R $USER:$USER nginx/ssl/
+chmod 600 nginx/ssl/privkey.pem
+chmod 644 nginx/ssl/fullchain.pem
 ```
 
-Depois, descomente as linhas de SSL no `docker-compose.yml` e atualize `nginx.conf`.
+#### c) Configuração já está pronta!
+O projeto já está configurado para SSL/HTTPS:
+- ✅ `nginx/nginx.conf` com dois blocos server (HTTP → HTTPS redirect e HTTPS)
+- ✅ `docker-compose.yml` com porta 443 exposta
+- ✅ Volume SSL montado no container Nginx
+- ✅ Headers de segurança configurados (HSTS, X-Frame-Options)
+
+#### d) Renovação automática dos certificados
+Certificados Let's Encrypt expiram a cada 90 dias. Configure renovação automática:
+
+```bash
+# Testar renovação (dry-run)
+sudo certbot renew --dry-run
+
+# Criar script de renovação com recarga do Nginx
+sudo nano /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
+```
+
+Conteúdo do script:
+```bash
+#!/bin/bash
+cd /home/usuario/seu-projeto
+./scripts/copy-ssl-certs.sh
+docker compose restart nginx
+```
+
+Tornar executável:
+```bash
+sudo chmod +x /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
+```
+
+O certbot executará este script automaticamente após cada renovação bem-sucedida.
+
+### 3. Configurar domínio no DNS
+Certifique-se de que seu domínio aponta para o IP da VPS:
+```
+Tipo A: seudominio.com → IP_DA_VPS
+Tipo A: www.seudominio.com → IP_DA_VPS
+```
 
 ### 4. Iniciar na VPS
 ```bash
@@ -188,7 +240,7 @@ docker system df
 
 ### Frontend não conecta no backend
 1. Verifique se `NEXT_PUBLIC_API_URL` está correto
-2. Teste: `curl http://localhost/api/clients`
+2. Teste: `curl https://seudominio.com/api/v1/clients`
 3. Veja logs: `docker compose logs -f nginx`
 
 ### Backend não conecta no PostgreSQL
@@ -196,14 +248,82 @@ docker system df
 2. Verifique health check: `docker compose ps`
 3. Veja logs: `docker compose logs -f postgres`
 
-### Porta 80 já em uso
+### Porta 80 ou 443 já em uso
 ```bash
 # Descobrir o processo
 sudo lsof -i :80
+sudo lsof -i :443
 
 # Parar Apache/Nginx local se existir
 sudo systemctl stop apache2
 sudo systemctl stop nginx
+```
+
+### Problemas com SSL/HTTPS
+
+#### "Connection Refused" ao acessar HTTPS
+1. Verifique se a porta 443 está exposta:
+```bash
+docker compose ps
+# Deve mostrar: 0.0.0.0:443->443/tcp
+```
+
+2. Verifique se os certificados foram copiados:
+```bash
+ls -lh nginx/ssl/
+# Deve mostrar: fullchain.pem e privkey.pem
+```
+
+3. Veja logs do Nginx:
+```bash
+docker compose logs nginx
+```
+
+#### "Certificate not found" ou erro SSL no Nginx
+1. Verifique se os certificados existem dentro do container:
+```bash
+docker exec cpsystem-nginx ls -la /etc/nginx/ssl/
+```
+
+2. Se não existirem, copie novamente:
+```bash
+./scripts/copy-ssl-certs.sh
+docker compose restart nginx
+```
+
+#### HTTP funciona mas HTTPS não
+1. Verifique firewall da VPS:
+```bash
+# Para UFW
+sudo ufw status
+sudo ufw allow 443/tcp
+
+# Para iptables
+sudo iptables -L -n | grep 443
+```
+
+2. Verifique se o provedor de VPS não está bloqueando porta 443
+
+#### "NET::ERR_CERT_AUTHORITY_INVALID"
+1. Certificados podem ter expirado:
+```bash
+# Verificar validade
+sudo certbot certificates
+
+# Renovar se necessário
+sudo certbot renew
+./scripts/copy-ssl-certs.sh
+docker compose restart nginx
+```
+
+#### Redireciona sempre para HTTPS (loop infinito)
+Isso é o comportamento esperado! O HTTP (porta 80) redireciona automaticamente para HTTPS (porta 443).
+
+Se você está tendo loop, pode ser problema com proxy reverso. Verifique os headers:
+```bash
+curl -I http://seudominio.com/
+# Deve retornar: HTTP/1.1 301 Moved Permanently
+# Location: https://seudominio.com/
 ```
 
 ## 🗑️ Limpeza
@@ -221,12 +341,15 @@ docker system prune -a --volumes
 
 ## 📝 Resumo das Portas
 
-| Serviço    | Porta Interna | Porta Externa | Acesso       |
-|------------|---------------|---------------|--------------|
-| Nginx      | 80            | 80            | Público      |
-| Frontend   | 3000          | -             | Via Nginx    |
-| Backend    | 8080          | -             | Via Nginx    |
-| PostgreSQL | 5432          | 5432          | Dev/Interno  |
+| Serviço    | Porta Interna | Porta Externa | Acesso       | Protocolo |
+|------------|---------------|---------------|--------------|-----------|
+| Nginx      | 80            | 80            | Público      | HTTP (redirect) |
+| Nginx      | 443           | 443           | Público      | HTTPS     |
+| Frontend   | 3000          | -             | Via Nginx    | HTTP      |
+| Backend    | 8080          | -             | Via Nginx    | HTTP      |
+| PostgreSQL | 5432          | 5432          | Dev/Interno  | TCP       |
+
+**Nota**: Em produção, todo acesso HTTP (porta 80) é automaticamente redirecionado para HTTPS (porta 443).
 
 ## 🎓 Por que essa arquitetura?
 

@@ -35,7 +35,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-139150}
       SPRING_JPA_SHOW_SQL: ${SPRING_JPA_SHOW_SQL:-false}
       JAVA_OPTS: ${JAVA_OPTS:--Xmx512m -Xms256m}
-      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost,http://localhost:80}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-https://cpacessoriaecobranca.com.br,https://www.cpacessoriaecobranca.com.br,http://localhost:3000,http://localhost}
     depends_on:
       postgres:
         condition: service_healthy
@@ -66,12 +66,10 @@ services:
     container_name: cpsystem-nginx
     ports:
       - "80:80"
-      # Para SSL/HTTPS no futuro, descomente:
-      # - "443:443"
+      - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      # Para SSL certificates no futuro:
-      # - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
     depends_on:
       - backend
       - frontend
