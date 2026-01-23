@@ -175,7 +175,7 @@ download_backup() {
     
     if aws s3 cp "$s3_path" "$local_path" --region "$AWS_REGION"; then
         log "Download concluído com sucesso ✓"
-        echo "$local_path"
+        CURRENT_RESTORE_PATH="$local_path"
     else
         error "Falha ao baixar backup do S3"
     fi
@@ -302,7 +302,8 @@ main() {
     confirm_restore
     
     # Download do backup
-    backup_path=$(download_backup "$backup_filename")
+    download_backup "$backup_filename"
+    backup_path="$CURRENT_RESTORE_PATH"
     
     # Verificar integridade
     verify_backup "$backup_path"

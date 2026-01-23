@@ -102,7 +102,7 @@ perform_backup() {
     if docker exec "$DB_CONTAINER" pg_dump -U "$DB_USER" -d "$DB_NAME" | gzip > "$backup_path"; then
         local file_size=$(du -h "$backup_path" | cut -f1)
         log "Backup criado com sucesso! Tamanho: $file_size"
-        echo "$backup_path"
+        CURRENT_BACKUP_PATH="$backup_path"
     else
         error "Falha ao criar backup do banco de dados"
     fi
@@ -110,6 +110,7 @@ perform_backup() {
 
 upload_to_s3() {
     local backup_path="$1"
+    if [ -z "$backup_path" ]; then return 1; fi
     local backup_file=$(basename "$backup_path")
     local s3_path="s3://${S3_BUCKET}/${backup_file}"
     
@@ -212,7 +213,8 @@ main() {
     create_backup_dir
     
     # Fazer backup
-    backup_path=$(perform_backup)
+    perform_backup
+    backup_path="$CURRENT_BACKUP_PATH"
     
     # Verificar integridade
     verify_backup "$backup_path"
