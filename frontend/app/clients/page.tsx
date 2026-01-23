@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import {
   Table,
   TableBody,
@@ -69,25 +69,35 @@ export default function ClientsPage() {
   return (
     <main className="sm:ml-14 p-4">
       <div className="flex flex-col gap-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-bold text-gray-800">Clientes</h1>
+            <NewClientDialog onSuccess={loadClients} />
+          </div>
+        </div>
+
         <Card>
-          <CardHeader className="pb-3">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <CardTitle className="text-2xl font-bold">Clientes</CardTitle>
-              <NewClientDialog onSuccess={loadClients} />
-            </div>
-          </CardHeader>
           <CardContent>
             <div className="rounded-md border">
-              <Table>
+              <Table className="table-fixed w-full">
+                <colgroup>
+                  <col className="w-[22%]" />
+                  <col className="w-[16%]" />
+                  <col className="w-[14%]" />
+                  <col className="w-[16%]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[12%]" />
+                </colgroup>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="min-w-[200px]">Nome</TableHead>
-                    <TableHead className="w-[180px]">Documento</TableHead>
-                    <TableHead className="w-[150px]">Telefone</TableHead>
-                    <TableHead className="min-w-[150px]">Banco</TableHead>
-                    <TableHead className="text-center w-[120px]">Taxa Multa</TableHead>
-                    <TableHead className="text-center w-[120px]">Juros Mensal</TableHead>
-                    <TableHead className="w-[100px]">Ações</TableHead>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Documento</TableHead>
+                    <TableHead>Telefone</TableHead>
+                    <TableHead>Banco</TableHead>
+                    <TableHead className="text-center">Taxa Multa</TableHead>
+                    <TableHead className="text-center">Juros Mensal</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

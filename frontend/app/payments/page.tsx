@@ -214,18 +214,29 @@ export default function PaymentsPage() {
           </CardHeader>
           <CardContent>
             <div className="rounded-md border">
-              <Table>
+              <Table className="table-fixed w-full">
+                <colgroup>
+                  <col className="w-[4%]" />
+                  <col className="w-[20%]" />
+                  <col className="w-[8%]" />
+                  <col className="w-[12%]" />
+                  <col className="w-[12%]" />
+                  <col className="w-[12%]" />
+                  <col className="w-[12%]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[10%]" />
+                </colgroup>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[50px]"></TableHead>
-                    <TableHead className="min-w-[150px]">Pagador</TableHead>
-                    <TableHead className="text-center w-[90px]">Parcela</TableHead>
-                    <TableHead className="w-[110px]">Vencimento</TableHead>
-                    <TableHead className="w-[130px]">Data Pagamento</TableHead>
-                    <TableHead className="text-right w-[120px]">Valor Original</TableHead>
-                    <TableHead className="text-right w-[130px]">Valor Com Juros</TableHead>
-                    <TableHead className="text-center w-[90px]">Status</TableHead>
-                    <TableHead className="w-[100px]"></TableHead>
+                    <TableHead></TableHead>
+                    <TableHead>Pagador</TableHead>
+                    <TableHead className="text-center">Parcela</TableHead>
+                    <TableHead>Vencimento</TableHead>
+                    <TableHead>Data Pagamento</TableHead>
+                    <TableHead className="text-right">Valor Original</TableHead>
+                    <TableHead className="text-right">Valor Com Juros</TableHead>
+                    <TableHead className="text-center">Status</TableHead>
+                    <TableHead className="text-right"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
