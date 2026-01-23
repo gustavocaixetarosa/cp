@@ -1,6 +1,7 @@
 package dev.gustavorosa.cpsystem.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -13,6 +14,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -20,6 +22,9 @@ public class SecurityConfig {
 
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Value("${cors.allowed-origins:http://localhost:3000,http://localhost}")
+    private String allowedOrigins;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -46,13 +51,14 @@ public class SecurityConfig {
         // Permitir credenciais
         configuration.setAllowCredentials(true);
         
-        // Origens permitidas para desenvolvimento e produção
-        configuration.setAllowedOriginPatterns(Arrays.asList(
-            "http://localhost:[*]",
-            "http://127.0.0.1:[*]",
-            "https://localhost:[*]",
-            "http://192.168.*:[*]"
-        ));
+        // Origens permitidas da variável de ambiente
+        List<String> origins = Arrays.asList(allowedOrigins.split(","));
+        configuration.setAllowedOrigins(origins);
+        
+        // Adicionar padrões para desenvolvimento local
+        configuration.addAllowedOriginPattern("http://localhost:[*]");
+        configuration.addAllowedOriginPattern("http://127.0.0.1:[*]");
+        configuration.addAllowedOriginPattern("http://192.168.*:[*]");
         
         // Headers permitidos
         configuration.setAllowedHeaders(Arrays.asList("*"));
