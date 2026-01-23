@@ -10,3 +10,13 @@ management:
     health:
       show-details: when-authorized
 
+# JWT Configuration (Local Development)
+jwt:
+  secret: desenvolvimento_local_secret_key_minimum_32_characters_for_testing
+  expiration-ms: 3600000
+
+# Authentication Configuration (Local Development)
+auth:
+  user:
+    email: carol@cpacessoriaecobranca.com
+    password: "054058"

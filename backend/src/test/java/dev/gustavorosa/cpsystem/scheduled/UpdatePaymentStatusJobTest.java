@@ -48,13 +48,14 @@ class UpdatePaymentStatusJobTest {
         // Then
         // Multa: 100 * 0.02 = 2.00
         // Juros: (100 * (0.03 / 30)) * 10 dias = 1.00
-        // Total esperado de atraso: 3.00
+        // Acréscimo total: 3.00
+        // Valor total com atraso (overdueValue): 100.00 + 3.00 = 103.00
         
         ArgumentCaptor<List<Payment>> captor = ArgumentCaptor.forClass(List.class);
         verify(paymentRepository).saveAll(captor.capture());
         
         Payment updatedPayment = captor.getValue().get(0);
-        assertEquals(0, BigDecimal.valueOf(3.00).compareTo(updatedPayment.getOverdueValue()));
+        assertEquals(0, BigDecimal.valueOf(103.00).compareTo(updatedPayment.getOverdueValue()));
         assertEquals(LocalDate.now(), updatedPayment.getOverdueValueDate());
     }
 

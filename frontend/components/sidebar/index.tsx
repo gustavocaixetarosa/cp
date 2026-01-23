@@ -1,10 +1,18 @@
+"use client";
+
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet"
 import { Button } from "../ui/button"
 import Link from "next/link"
 import { Banknote, FileText, Home, LayoutDashboardIcon, LogOut, Package, PanelLeft, Settings, Users } from "lucide-react"
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip"
+import { logout } from "@/lib/auth"
 
 export function Sidebar() {
+  const handleLogout = (e: React.MouseEvent) => {
+    e.preventDefault();
+    logout();
+  };
+
   return (
     <div className="flex w-full flex-col bg-muted/40">
 
@@ -84,14 +92,14 @@ export function Sidebar() {
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <Link
-                  href="#"
+                <button
+                  onClick={handleLogout}
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg 
                   text-muted-foreground trasition-colors hover:text-foreground"
                 >
                   <LogOut className="h-5 w-5" />
                   <span className="sr-only">Sair</span>
-                </Link>
+                </button>
               </TooltipTrigger>
               <TooltipContent side="right">Sair</TooltipContent>
             </Tooltip>
@@ -156,13 +164,13 @@ export function Sidebar() {
                 </Link>
 
 
-                <Link
-                  href="#"
+                <button
+                  onClick={handleLogout}
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover: text-foreground"
                 >
                   <LogOut className="h-5 w-5 transition-all" />
                   Sair
-                </Link>
+                </button>
               </nav>
             </SheetContent>
           </Sheet>

@@ -1,11 +1,48 @@
-// Em produção (Docker), usa /api/v1 (Nginx faz proxy para backend:8080/v1)
-// Em desenvolvimento, usa http://localhost:8080/v1 (acesso direto ao backend)
+import { getAuthToken, logout } from './auth';
+
+// Em produção (Docker), usa /api/v1 (Nginx remove /api e envia para backend:8080/v1)
+// Em desenvolvimento, usa http://localhost:8080/v1 (acesso direto ao backend sem /api)
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/v1';
 
-export async function fetchClients() {
-  const response = await fetch(`${API_BASE_URL}/client`);
-  if (!response.ok) throw new Error('Failed to fetch clients');
+// Helper function to add auth headers to requests
+function getAuthHeaders(): HeadersInit {
+  const token = getAuthToken();
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  return headers;
+}
+
+// Helper function to handle API responses
+async function handleResponse<T>(response: Response): Promise<T> {
+  if (response.status === 401) {
+    // Unauthorized - redirect to login
+    logout();
+    throw new Error('Sessão expirada. Faça login novamente.');
+  }
+  
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
+  
+  // Some endpoints return 204 No Content
+  if (response.status === 204) {
+    return undefined as T;
+  }
+  
   return response.json();
+}
+
+export async function fetchClients() {
+  const response = await fetch(`${API_BASE_URL}/client`, {
+    headers: getAuthHeaders(),
+  });
+  return handleResponse(response);
 }
 
 export async function fetchGroupedPayments(filters: {
@@ -20,23 +57,25 @@ export async function fetchGroupedPayments(filters: {
   if (filters.month) params.append('month', filters.month.toString());
   if (filters.year) params.append('year', filters.year.toString());
 
-  const response = await fetch(`${API_BASE_URL}/payment?${params.toString()}`);
-  if (!response.ok) throw new Error('Failed to fetch payments');
-  return response.json();
+  const response = await fetch(`${API_BASE_URL}/payment?${params.toString()}`, {
+    headers: getAuthHeaders(),
+  });
+  return handleResponse(response);
 }
 
 export async function markPaymentAsPaid(paymentId: number) {
   const response = await fetch(`${API_BASE_URL}/payment/${paymentId}/mark-as-paid`, {
     method: 'PATCH',
+    headers: getAuthHeaders(),
   });
-  if (!response.ok) throw new Error('Failed to mark payment as paid');
-  return response.json();
+  return handleResponse(response);
 }
 
 export async function fetchClientById(id: number) {
-  const response = await fetch(`${API_BASE_URL}/client/${id}`);
-  if (!response.ok) throw new Error('Failed to fetch client');
-  return response.json();
+  const response = await fetch(`${API_BASE_URL}/client/${id}`, {
+    headers: getAuthHeaders(),
+  });
+  return handleResponse(response);
 }
 
 export async function createPaymentGroup(data: {
@@ -52,12 +91,10 @@ export async function createPaymentGroup(data: {
 }) {
   const response = await fetch(`${API_BASE_URL}/payment-group`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
-  if (!response.ok) throw new Error('Failed to create payment group');
-  // Backend returns 200 OK with no content
-  return;
+  return handleResponse(response);
 }
 
 export async function updatePayment(id: number, data: {
@@ -68,17 +105,17 @@ export async function updatePayment(id: number, data: {
 }) {
   const response = await fetch(`${API_BASE_URL}/payment/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
-  if (!response.ok) throw new Error('Failed to update payment');
-  return response.json();
+  return handleResponse(response);
 }
 
 export async function fetchAllClients() {
-  const response = await fetch(`${API_BASE_URL}/client`);
-  if (!response.ok) throw new Error('Failed to fetch clients');
-  return response.json();
+  const response = await fetch(`${API_BASE_URL}/client`, {
+    headers: getAuthHeaders(),
+  });
+  return handleResponse(response);
 }
 
 export async function createClient(data: {
@@ -92,12 +129,10 @@ export async function createClient(data: {
 }) {
   const response = await fetch(`${API_BASE_URL}/client`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
-  if (!response.ok) throw new Error('Failed to create client');
-  // Backend returns 201 Created with Location header
-  return;
+  return handleResponse(response);
 }
 
 export async function updateClient(id: number, data: {
@@ -111,18 +146,16 @@ export async function updateClient(id: number, data: {
 }) {
   const response = await fetch(`${API_BASE_URL}/client/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
-  if (!response.ok) throw new Error('Failed to update client');
-  return response.json();
+  return handleResponse(response);
 }
 
 export async function deleteClient(id: number) {
   const response = await fetch(`${API_BASE_URL}/client/${id}`, {
     method: 'DELETE',
+    headers: getAuthHeaders(),
   });
-  if (!response.ok) throw new Error('Failed to delete client');
-  // Backend returns 204 No Content
-  return;
+  return handleResponse(response);
 }

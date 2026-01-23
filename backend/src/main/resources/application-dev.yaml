@@ -1,4 +1,14 @@
 spring:
-  flyway:
-    locations: classpath:db/migration,classpath:db/migration-dev
-    out-of-order: true
+  jpa:
+    show-sql: true
+
+# JWT Configuration (Development)
+jwt:
+  secret: lVzxD5+JgrOAE3+pCG+5lvbg1OG0/Sonjddognd11Wc=
+  expiration-ms: 3600000
+
+# Authentication Configuration (Development)
+auth:
+  user:
+    email: carol@cpacessoriaecobranca.com
+    password: "054058"
