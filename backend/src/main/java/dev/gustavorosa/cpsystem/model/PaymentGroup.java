@@ -28,6 +28,9 @@ public class PaymentGroup {
     @Column(name = "payer_document", nullable = false, length = 20)
     private String payerDocument;
 
+    @Column(name = "payer_phone", length = 20)
+    private String payerPhone;
+
     @Column(name = "total_installments", nullable = false)
     private Integer totalInstallments;
 

@@ -25,6 +25,7 @@ export interface PaymentResponse {
   paymentGroupId: number;
   groupName: string;
   payerName: string;
+  payerPhone: string | null;
   installmentNumber: number;
   totalInstallments: number;
   originalValue: number;
@@ -44,6 +45,7 @@ export interface PaymentGroupData {
   id: number;
   payerName: string;
   payerDocument: string;
+  payerPhone: string | null;
   monthlyValue: number;
   totalInstallments: number;
   paidInstallments: number;
@@ -131,6 +133,7 @@ export async function createPaymentGroup(data: {
   clientId: number;
   payerName: string;
   payerDocument: string;
+  payerPhone?: string;
   monthlyValue: number;
   totalInstallments: number;
   lateFeeRate?: number;

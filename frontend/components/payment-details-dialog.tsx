@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { CalendarIcon, Loader2, PencilIcon, ChevronDownIcon } from "lucide-react"
+import { Loader2, PencilIcon, ChevronDownIcon } from "lucide-react"
 import * as z from "zod"
 
 import { Button } from "@/components/ui/button"
@@ -22,7 +22,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -100,6 +99,19 @@ export function PaymentDetailsDialog({ payment, onSuccess }: PaymentDetailsDialo
     })
   }
 
+  const formatPhone = (phone: string | null) => {
+    if (!phone) return "---"
+    const numbers = phone.replace(/\D/g, "")
+    if (numbers.length === 11) {
+      // Celular: (00) 00000-0000
+      return numbers.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3")
+    } else if (numbers.length === 10) {
+      // Fixo: (00) 0000-0000
+      return numbers.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3")
+    }
+    return phone
+  }
+
   const getStatusBadge = (status: string) => {
     const badges = {
       PAID: <Badge variant="default" className="bg-green-500">Pago</Badge>,
@@ -150,225 +162,161 @@ export function PaymentDetailsDialog({ payment, onSuccess }: PaymentDetailsDialo
           <PencilIcon className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Detalhes do Pagamento</DialogTitle>
-          <DialogDescription>
-            Visualize e edite as informações do pagamento
-          </DialogDescription>
+      <DialogContent className="max-w-[95vw] lg:max-w-[1200px] w-full p-10 overflow-hidden">
+        <DialogHeader className="flex flex-row items-center justify-between border-b pb-6 mb-2">
+          <div className="space-y-1">
+            <DialogTitle className="text-3xl font-bold tracking-tight">Detalhes do Pagamento</DialogTitle>
+            <DialogDescription className="text-base">
+              Visualize e gerencie todas as informações deste lançamento
+            </DialogDescription>
+          </div>
+          <div className="flex items-center gap-4 bg-muted/50 px-6 py-3 rounded-xl border shadow-sm">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em]">Status Atual</span>
+            {getStatusBadge(payment.paymentStatus)}
+          </div>
         </DialogHeader>
         
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4">
-            {/* Read-only Information */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-foreground">Informações do Pagamento</h3>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10 py-6">
+            {/* SEÇÃO 1: Dados de Referência em 4 Colunas */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+              <div className="space-y-2">
+                <FormLabel className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.15em]">Pagador</FormLabel>
+                <p className="text-base font-semibold border-b-2 border-muted pb-2 truncate">{payment.payerName}</p>
+              </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <FormLabel className="text-sm">Pagador</FormLabel>
-                  <Input value={payment.payerName} readOnly className="bg-muted mt-2" />
-                </div>
-                
-                <div className="space-y-2">
-                  <FormLabel className="text-sm">Parcela</FormLabel>
-                  <Input 
-                    value={`${payment.installmentNumber} / ${payment.totalInstallments}`} 
-                    readOnly 
-                    className="bg-muted mt-2" 
-                  />
-                </div>
+              <div className="space-y-2">
+                <FormLabel className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.15em]">Telefone de Contato</FormLabel>
+                <p className="text-base font-semibold border-b-2 border-muted pb-2">{formatPhone(payment.payerPhone)}</p>
               </div>
 
               <div className="space-y-2">
-                <FormLabel className="text-sm">Status</FormLabel>
-                <div className="mt-2">
-                  {getStatusBadge(payment.paymentStatus)}
-                </div>
+                <FormLabel className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.15em]">Identificação da Parcela</FormLabel>
+                <p className="text-base font-semibold border-b-2 border-muted pb-2">{payment.installmentNumber} / {payment.totalInstallments}</p>
+              </div>
+
+              <div className="space-y-2">
+                <FormLabel className="text-[11px] font-black text-orange-600 uppercase tracking-[0.15em]">Total com Juros (Hoje)</FormLabel>
+                <p className="text-lg font-black text-orange-600 border-b-2 border-orange-100 pb-2">
+                  {payment.overdueValue ? payment.overdueValue.toLocaleString("pt-BR", {
+                    style: "currency",
+                    currency: "BRL"
+                  }) : "---"}
+                </p>
               </div>
             </div>
 
-            {/* Editable Values */}
-            <div className="space-y-4 pt-2">
-              <h3 className="text-sm font-semibold text-foreground">Valores</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="originalValue"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Valor Original</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">
-                            R$
-                          </span>
-                          <Input
-                            placeholder="0,00"
-                            className="pl-10"
-                            {...field}
-                            onChange={(e) => {
-                              const formatted = formatCurrency(e.target.value)
-                              field.onChange(formatted)
-                            }}
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="space-y-2">
-                  <FormLabel>Valor com Juros</FormLabel>
-                  <Input 
-                    value={payment.overdueValue ? payment.overdueValue.toLocaleString("pt-BR", {
-                      style: "currency",
-                      currency: "BRL"
-                    }) : "---"} 
-                    readOnly 
-                    className="bg-muted" 
-                  />
-                  <p className="text-sm text-muted-foreground">Calculado pelo sistema</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Editable Dates */}
-            <div className="space-y-4 pt-2">
-              <h3 className="text-sm font-semibold text-foreground">Datas</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="dueDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col space-y-2">
-                      <FormLabel>Data de Vencimento</FormLabel>
-                      <Popover open={dueDatePickerOpen} onOpenChange={setDueDatePickerOpen}>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-full justify-between font-normal h-9",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "dd/MM/yyyy")
-                              ) : (
-                                <span>Selecione uma data</span>
-                              )}
-                              <ChevronDownIcon className="h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto overflow-hidden p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            captionLayout="dropdown"
-                            onSelect={(date) => {
-                              field.onChange(date)
-                              setDueDatePickerOpen(false)
-                            }}
-                            fromYear={2020}
-                            toYear={2030}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="paymentDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col space-y-2">
-                      <FormLabel>Data de Pagamento</FormLabel>
-                      <Popover open={paymentDatePickerOpen} onOpenChange={setPaymentDatePickerOpen}>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-full justify-between font-normal h-9",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "dd/MM/yyyy")
-                              ) : (
-                                <span>Não pago</span>
-                              )}
-                              <ChevronDownIcon className="h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto overflow-hidden p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value || undefined}
-                            captionLayout="dropdown"
-                            onSelect={(date) => {
-                              field.onChange(date)
-                              setPaymentDatePickerOpen(false)
-                            }}
-                            fromYear={2020}
-                            toYear={2030}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormDescription>Opcional</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
-
-            {/* Observation */}
-            <div className="pt-2">
+            {/* SEÇÃO 2: Campos de Edição em 3 Colunas Largas */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
               <FormField
                 control={form.control}
-                name="observation"
+                name="originalValue"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Observação</FormLabel>
+                  <FormItem className="space-y-2">
+                    <FormLabel className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.15em]">Valor Original</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Observações sobre este pagamento"
-                        {...field}
-                      />
+                      <div className="relative">
+                        <span className="absolute left-4 top-3.5 text-muted-foreground font-bold">R$</span>
+                        <Input 
+                          placeholder="0,00"
+                          className="pl-12 h-14 text-lg font-medium shadow-sm" 
+                          {...field} 
+                          onChange={(e) => field.onChange(formatCurrency(e.target.value))} 
+                        />
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="dueDate"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col space-y-2">
+                    <FormLabel className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.15em]">Data de Vencimento</FormLabel>
+                    <Popover open={dueDatePickerOpen} onOpenChange={setDueDatePickerOpen}>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button variant="outline" className={cn("w-full justify-between font-medium h-14 text-base shadow-sm", !field.value && "text-muted-foreground")}>
+                            {field.value ? format(field.value, "dd/MM/yyyy") : <span>Selecionar Data</span>}
+                            <ChevronDownIcon className="h-5 w-5 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar 
+                          mode="single" 
+                          selected={field.value} 
+                          captionLayout="dropdown"
+                          onSelect={(date) => { field.onChange(date); setDueDatePickerOpen(false); }} 
+                          fromYear={2020}
+                          toYear={2030}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="paymentDate"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col space-y-2">
+                    <FormLabel className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.15em]">Data de Recebimento</FormLabel>
+                    <Popover open={paymentDatePickerOpen} onOpenChange={setPaymentDatePickerOpen}>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button variant="outline" className={cn("w-full justify-between font-medium h-14 text-base shadow-sm", !field.value && "text-muted-foreground")}>
+                            {field.value ? format(field.value, "dd/MM/yyyy") : <span className="text-muted-foreground/60 italic">Aguardando pagamento</span>}
+                            <ChevronDownIcon className="h-5 w-5 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar 
+                          mode="single" 
+                          selected={field.value || undefined} 
+                          captionLayout="dropdown"
+                          onSelect={(date) => { field.onChange(date); setPaymentDatePickerOpen(false); }} 
+                          fromYear={2020}
+                          toYear={2030}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
+
+            {/* SEÇÃO 3: Observações (Largura Total) */}
+            <FormField
+              control={form.control}
+              name="observation"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.15em]">Observações do Lançamento</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Escreva aqui qualquer detalhe importante sobre este pagamento..." {...field} className="h-16 text-base font-medium shadow-sm" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </form>
         </Form>
 
-        <DialogFooter className="mt-6">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setOpen(false)}
-            disabled={isSubmitting}
-          >
+        <DialogFooter className="mt-4 border-t pt-8 flex items-center justify-end gap-4">
+          <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={isSubmitting} className="font-bold text-base px-8">
             Cancelar
           </Button>
-          <Button
-            type="submit"
-            onClick={form.handleSubmit(onSubmit)}
-            disabled={isSubmitting}
-          >
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isSubmitting ? "Salvando..." : "Salvar"}
+          <Button type="submit" onClick={form.handleSubmit(onSubmit)} disabled={isSubmitting} className="px-12 h-14 text-lg font-black shadow-lg hover:shadow-xl transition-all">
+            {isSubmitting && <Loader2 className="mr-3 h-5 w-5 animate-spin" />}
+            Salvar Alterações
           </Button>
         </DialogFooter>
       </DialogContent>

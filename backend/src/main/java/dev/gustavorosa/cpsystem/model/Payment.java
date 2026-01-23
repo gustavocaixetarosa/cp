@@ -68,6 +68,7 @@ public class Payment {
                 this.getPaymentGroup().getId(),
                 this.getPaymentGroup().getGroupName(),
                 this.getPayerName(),
+                this.getPaymentGroup().getPayerPhone(),
                 this.getInstallmentNumber(),
                 this.getTotalInstallments(),
                 this.getOriginalValue(),

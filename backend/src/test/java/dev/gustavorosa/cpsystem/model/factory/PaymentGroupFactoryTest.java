@@ -42,7 +42,7 @@ class PaymentGroupFactoryTest {
                 .build();
 
         CreatePaymentGroupRequest request = new CreatePaymentGroupRequest(
-                1L, "Payer Name", "123456789", BigDecimal.valueOf(100.0), 3,
+                1L, "Payer Name", "123456789", "11999999999", BigDecimal.valueOf(100.0), 3,
                 null, null, LocalDate.now().plusDays(1), "Obs"
         );
 
@@ -65,7 +65,7 @@ class PaymentGroupFactoryTest {
         LocalDate tomorrow = LocalDate.now().plusDays(1);
 
         CreatePaymentGroupRequest request = new CreatePaymentGroupRequest(
-                1L, "Payer Name", "123456789", BigDecimal.valueOf(100.0), 2,
+                1L, "Payer Name", "123456789", "11999999999", BigDecimal.valueOf(100.0), 2,
                 null, null, yesterday, "Obs"
         );
 

@@ -30,6 +30,7 @@ public class PaymentGroupFactory {
                 .client(client)
                 .groupName(buildGroupName(dto))
                 .payerDocument(dto.payerDocument())
+                .payerPhone(dto.payerPhone())
                 .totalInstallments(dto.totalInstallments())
                 .lateFeeRate(dto.lateFeeRate() != null ? dto.lateFeeRate() : client.getLateFeeRate())
                 .monthlyInterestRate(dto.monthlyInterestRate() != null ? dto.monthlyInterestRate() : client.getMonthlyInterestRate()   )

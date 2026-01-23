@@ -9,6 +9,7 @@ public record CreatePaymentGroupRequest(
     @NotNull(message = "client id must not be null.") Long clientId,
     @NotNull(message = "payer name must not be null.") String payerName,
     @NotNull(message = "payer document must not be null.") String payerDocument,
+    String payerPhone,
     @NotNull(message = "monthly value must not be null.") BigDecimal monthlyValue,
     @NotNull(message = "total installments must not be null.") Integer totalInstallments,
     BigDecimal lateFeeRate,

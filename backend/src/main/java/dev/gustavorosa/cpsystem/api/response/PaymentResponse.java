@@ -11,6 +11,7 @@ public record PaymentResponse(
         Long paymentGroupId,
         String groupName,
         String payerName,
+        String payerPhone,
         int installmentNumber,
         int totalInstallments,
         BigDecimal originalValue,

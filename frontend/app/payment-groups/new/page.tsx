@@ -48,6 +48,7 @@ const formSchema = z.object({
   clientId: z.string().min(1, "Selecione um cliente"),
   payerName: z.string().min(3, "Nome deve ter no mínimo 3 caracteres").max(100, "Nome deve ter no máximo 100 caracteres"),
   payerDocument: z.string().min(11, "CPF/CNPJ inválido").max(18, "CPF/CNPJ inválido"),
+  payerPhone: z.string().optional(),
   monthlyValue: z.string().min(1, "Valor mensal é obrigatório"),
   totalInstallments: z.string().min(1, "Número de parcelas é obrigatório"),
   lateFeeRate: z.string().optional(),
@@ -69,6 +70,7 @@ export default function NewPaymentGroupPage() {
       clientId: "",
       payerName: "",
       payerDocument: "",
+      payerPhone: "",
       monthlyValue: "",
       totalInstallments: "",
       lateFeeRate: "",
@@ -128,6 +130,18 @@ export default function NewPaymentGroupPage() {
     })
   }
 
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, "")
+    if (numbers.length === 11) {
+      // Celular: (00) 00000-0000
+      return numbers.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3")
+    } else if (numbers.length === 10) {
+      // Fixo: (00) 0000-0000
+      return numbers.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3")
+    }
+    return value
+  }
+
   const handleClientChange = async (clientId: string) => {
     if (clientId) {
       try {
@@ -173,6 +187,7 @@ export default function NewPaymentGroupPage() {
         clientId: parseInt(values.clientId),
         payerName: values.payerName,
         payerDocument: values.payerDocument.replace(/\D/g, ""),
+        payerPhone: values.payerPhone?.replace(/\D/g, ""),
         monthlyValue,
         totalInstallments: parseInt(values.totalInstallments),
         lateFeeRate,
@@ -274,6 +289,28 @@ export default function NewPaymentGroupPage() {
                             field.onChange(formatted)
                           }}
                           maxLength={18}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="payerPhone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Telefone do Pagador (opcional)</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="(00) 00000-0000"
+                          {...field}
+                          onChange={(e) => {
+                            const formatted = formatPhone(e.target.value)
+                            field.onChange(formatted)
+                          }}
+                          maxLength={15}
                         />
                       </FormControl>
                       <FormMessage />
