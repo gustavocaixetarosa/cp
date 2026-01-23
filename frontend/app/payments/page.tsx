@@ -21,30 +21,9 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ChevronDown, ChevronRight, AlertCircle, Check, Plus } from "lucide-react"
-import { fetchClients, fetchGroupedPayments, markPaymentAsPaid, type Client } from "@/lib/api"
+import { fetchClients, fetchGroupedPayments, markPaymentAsPaid, type Client, type GroupedPaymentResponse } from "@/lib/api"
 import { cn } from "@/lib/utils"
 import { PaymentDetailsDialog } from "@/components/payment-details-dialog"
-
-interface PaymentResponse {
-  id: number
-  clientId: number
-  paymentGroupId: number
-  groupName: string
-  payerName: string
-  installmentNumber: number
-  totalInstallments: number
-  originalValue: number
-  overdueValue: number
-  dueDate: string
-  paymentDate: string | null
-  paymentStatus: "PENDING" | "PAID" | "PAID_LATE" | "OVERDUE"
-  observation: string
-}
-
-interface GroupedPaymentResponse {
-  mainPayment: PaymentResponse
-  overduePayments: PaymentResponse[]
-}
 
 export default function PaymentsPage() {
   const router = useRouter()
