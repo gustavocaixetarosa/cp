@@ -10,6 +10,27 @@
 set -e  # Exit on error
 
 # ==========================================
+# CARREGAR VARIÁVEIS DE AMBIENTE
+# ==========================================
+
+# Determinar o diretório raiz do projeto
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+# Carregar arquivo .env se existir
+if [ -f "$PROJECT_ROOT/.env" ]; then
+    echo "[INFO] Carregando variáveis de $PROJECT_ROOT/.env"
+    set -a  # Exportar todas as variáveis
+    source "$PROJECT_ROOT/.env"
+    set +a
+elif [ -f "$PROJECT_ROOT/env.production" ]; then
+    echo "[INFO] Carregando variáveis de $PROJECT_ROOT/env.production"
+    set -a  # Exportar todas as variáveis
+    source "$PROJECT_ROOT/env.production"
+    set +a
+fi
+
+# ==========================================
 # CONFIGURAÇÕES - AJUSTE CONFORME NECESSÁRIO
 # ==========================================
 
@@ -19,9 +40,9 @@ AWS_REGION="${AWS_REGION:-us-east-1}"
 
 # PostgreSQL
 DB_CONTAINER="${DB_CONTAINER:-cpsystem-db}"
-DB_NAME="${DB_NAME:-cobranca}"
-DB_USER="${DB_USER:-gustavo}"
-DB_PASSWORD="${DB_PASSWORD:-139150}"
+DB_NAME="${DB_NAME:-${POSTGRES_DB:-cobranca}}"
+DB_USER="${DB_USER:-${POSTGRES_USER:-gustavo}}"
+DB_PASSWORD="${DB_PASSWORD:-${POSTGRES_PASSWORD:-139150}}"
 
 # Backup settings
 BACKUP_DIR="${BACKUP_DIR:-/tmp/cpsystem-backups}"
