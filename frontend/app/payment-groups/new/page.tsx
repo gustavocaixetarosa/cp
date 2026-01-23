@@ -41,15 +41,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { createPaymentGroup, fetchClients, fetchClientById } from "@/lib/api"
+import { createPaymentGroup, fetchClients, fetchClientById, type Client } from "@/lib/api"
 import { cn } from "@/lib/utils"
-
-interface Client {
-  id: number
-  name: string
-  lateFeeRate?: number
-  monthlyInterestRate?: number
-}
 
 const formSchema = z.object({
   clientId: z.string().min(1, "Selecione um cliente"),

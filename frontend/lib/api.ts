@@ -4,6 +4,55 @@ import { getAuthToken, logout } from './auth';
 // Em desenvolvimento, usa http://localhost:8080/v1 (acesso direto ao backend sem /api)
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/v1';
 
+// ==========================================
+// TYPE DEFINITIONS
+// ==========================================
+
+export interface Client {
+  id: number;
+  name: string;
+  document: string;
+  phone: string | null;
+  address: string;
+  bank: string | null;
+  lateFeeRate: number | null;
+  monthlyInterestRate: number | null;
+}
+
+export interface PaymentResponse {
+  id: number;
+  clientId: number;
+  paymentGroupId: number;
+  groupName: string;
+  payerName: string;
+  installmentNumber: number;
+  totalInstallments: number;
+  originalValue: number;
+  overdueValue: number;
+  dueDate: string;
+  paymentDate: string | null;
+  paymentStatus: "PENDING" | "PAID" | "PAID_LATE" | "OVERDUE";
+  observation: string;
+}
+
+export interface GroupedPaymentResponse {
+  mainPayment: PaymentResponse;
+  overduePayments: PaymentResponse[];
+}
+
+export interface PaymentGroupData {
+  id: number;
+  payerName: string;
+  payerDocument: string;
+  monthlyValue: number;
+  totalInstallments: number;
+  paidInstallments: number;
+  lateFeeRate: number;
+  monthlyInterestRate: number;
+  observation: string | null;
+  client: Client;
+}
+
 // Helper function to add auth headers to requests
 function getAuthHeaders(): HeadersInit {
   const token = getAuthToken();
@@ -38,11 +87,11 @@ async function handleResponse<T>(response: Response): Promise<T> {
   return response.json();
 }
 
-export async function fetchClients() {
+export async function fetchClients(): Promise<Client[]> {
   const response = await fetch(`${API_BASE_URL}/client`, {
     headers: getAuthHeaders(),
   });
-  return handleResponse(response);
+  return handleResponse<Client[]>(response);
 }
 
 export async function fetchGroupedPayments(filters: {
@@ -50,7 +99,7 @@ export async function fetchGroupedPayments(filters: {
   status?: string;
   month?: number;
   year?: number;
-}) {
+}): Promise<GroupedPaymentResponse[]> {
   const params = new URLSearchParams();
   if (filters.clientId && filters.clientId !== 'all') params.append('clientId', filters.clientId);
   if (filters.status && filters.status !== 'all') params.append('status', filters.status);
@@ -60,22 +109,22 @@ export async function fetchGroupedPayments(filters: {
   const response = await fetch(`${API_BASE_URL}/payment?${params.toString()}`, {
     headers: getAuthHeaders(),
   });
-  return handleResponse(response);
+  return handleResponse<GroupedPaymentResponse[]>(response);
 }
 
-export async function markPaymentAsPaid(paymentId: number) {
+export async function markPaymentAsPaid(paymentId: number): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/payment/${paymentId}/mark-as-paid`, {
     method: 'PATCH',
     headers: getAuthHeaders(),
   });
-  return handleResponse(response);
+  return handleResponse<void>(response);
 }
 
-export async function fetchClientById(id: number) {
+export async function fetchClientById(id: number): Promise<Client> {
   const response = await fetch(`${API_BASE_URL}/client/${id}`, {
     headers: getAuthHeaders(),
   });
-  return handleResponse(response);
+  return handleResponse<Client>(response);
 }
 
 export async function createPaymentGroup(data: {
@@ -88,13 +137,13 @@ export async function createPaymentGroup(data: {
   monthlyInterestRate?: number;
   firstInstallmentDueDate: string; // ISO format YYYY-MM-DD
   observation?: string;
-}) {
+}): Promise<PaymentGroupData> {
   const response = await fetch(`${API_BASE_URL}/payment-group`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
-  return handleResponse(response);
+  return handleResponse<PaymentGroupData>(response);
 }
 
 export async function updatePayment(id: number, data: {
@@ -102,20 +151,20 @@ export async function updatePayment(id: number, data: {
   dueDate: string; // ISO format YYYY-MM-DD
   paymentDate?: string; // ISO format YYYY-MM-DD
   observation?: string;
-}) {
+}): Promise<PaymentResponse> {
   const response = await fetch(`${API_BASE_URL}/payment/${id}`, {
     method: 'PUT',
     headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
-  return handleResponse(response);
+  return handleResponse<PaymentResponse>(response);
 }
 
-export async function fetchAllClients() {
+export async function fetchAllClients(): Promise<Client[]> {
   const response = await fetch(`${API_BASE_URL}/client`, {
     headers: getAuthHeaders(),
   });
-  return handleResponse(response);
+  return handleResponse<Client[]>(response);
 }
 
 export async function createClient(data: {
@@ -126,13 +175,13 @@ export async function createClient(data: {
   bank?: string;
   lateFeeRate?: number;
   monthlyInterestRate?: number;
-}) {
+}): Promise<Client> {
   const response = await fetch(`${API_BASE_URL}/client`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
-  return handleResponse(response);
+  return handleResponse<Client>(response);
 }
 
 export async function updateClient(id: number, data: {
@@ -143,19 +192,19 @@ export async function updateClient(id: number, data: {
   bank?: string;
   lateFeeRate?: number;
   monthlyInterestRate?: number;
-}) {
+}): Promise<Client> {
   const response = await fetch(`${API_BASE_URL}/client/${id}`, {
     method: 'PUT',
     headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
-  return handleResponse(response);
+  return handleResponse<Client>(response);
 }
 
-export async function deleteClient(id: number) {
+export async function deleteClient(id: number): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/client/${id}`, {
     method: 'DELETE',
     headers: getAuthHeaders(),
   });
-  return handleResponse(response);
+  return handleResponse<void>(response);
 }

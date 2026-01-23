@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// This middleware is simplified since we're using client-side auth checking
+// This proxy is simplified since we're using client-side auth checking
 // It only handles basic redirects for static routes
-export function middleware(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   // Allow all requests to pass through
   // Auth checking is done client-side via AuthGuard component
   return NextResponse.next();

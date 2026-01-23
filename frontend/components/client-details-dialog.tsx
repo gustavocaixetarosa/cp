@@ -35,19 +35,10 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { updateClient, deleteClient } from "@/lib/api"
+import { updateClient, deleteClient, type Client } from "@/lib/api"
 
 interface ClientDetailsDialogProps {
-  client: {
-    id: number
-    name: string
-    document: string
-    phone: string | null
-    address: string
-    bank: string | null
-    lateFeeRate: number | null
-    monthlyInterestRate: number | null
-  }
+  client: Client
   onSuccess: () => void
 }
 

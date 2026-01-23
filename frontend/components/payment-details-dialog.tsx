@@ -35,22 +35,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Badge } from "@/components/ui/badge"
-import { updatePayment } from "@/lib/api"
+import { updatePayment, type PaymentResponse } from "@/lib/api"
 import { cn } from "@/lib/utils"
 
 interface PaymentDetailsDialogProps {
-  payment: {
-    id: number
-    payerName: string
-    installmentNumber: number
-    totalInstallments: number
-    originalValue: number
-    overdueValue: number
-    dueDate: string
-    paymentDate: string | null
-    paymentStatus: "PENDING" | "PAID" | "PAID_LATE" | "OVERDUE"
-    observation: string
-  }
+  payment: PaymentResponse
   onSuccess: () => void
 }
 

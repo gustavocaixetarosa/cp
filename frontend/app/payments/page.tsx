@@ -21,7 +21,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ChevronDown, ChevronRight, AlertCircle, Check, Plus } from "lucide-react"
-import { fetchClients, fetchGroupedPayments, markPaymentAsPaid } from "@/lib/api"
+import { fetchClients, fetchGroupedPayments, markPaymentAsPaid, type Client } from "@/lib/api"
 import { cn } from "@/lib/utils"
 import { PaymentDetailsDialog } from "@/components/payment-details-dialog"
 
@@ -44,11 +44,6 @@ interface PaymentResponse {
 interface GroupedPaymentResponse {
   mainPayment: PaymentResponse
   overduePayments: PaymentResponse[]
-}
-
-interface Client {
-  id: number
-  name: string
 }
 
 export default function PaymentsPage() {

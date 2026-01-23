@@ -12,20 +12,9 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Plus, Users } from "lucide-react"
-import { fetchAllClients } from "@/lib/api"
+import { fetchAllClients, type Client } from "@/lib/api"
 import { ClientDetailsDialog } from "@/components/client-details-dialog"
 import { NewClientDialog } from "@/components/new-client-dialog"
-
-interface Client {
-  id: number
-  name: string
-  document: string
-  phone: string | null
-  address: string
-  bank: string | null
-  lateFeeRate: number | null
-  monthlyInterestRate: number | null
-}
 
 export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([])
