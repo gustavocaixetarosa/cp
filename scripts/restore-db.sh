@@ -20,14 +20,11 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 # Carregar arquivo .env se existir
 if [ -f "$PROJECT_ROOT/.env" ]; then
     echo "[INFO] Carregando variáveis de $PROJECT_ROOT/.env"
-    set -a  # Exportar todas as variáveis
-    source "$PROJECT_ROOT/.env"
-    set +a
+    # Carregar apenas variáveis específicas necessárias para restore
+    export $(grep -E "^(POSTGRES_|DB_|AWS_|S3_)" "$PROJECT_ROOT/.env" | grep -v '^#' | xargs)
 elif [ -f "$PROJECT_ROOT/env.production" ]; then
     echo "[INFO] Carregando variáveis de $PROJECT_ROOT/env.production"
-    set -a  # Exportar todas as variáveis
-    source "$PROJECT_ROOT/env.production"
-    set +a
+    export $(grep -E "^(POSTGRES_|DB_|AWS_|S3_)" "$PROJECT_ROOT/env.production" | grep -v '^#' | xargs)
 fi
 
 # ==========================================
