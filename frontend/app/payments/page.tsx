@@ -119,15 +119,16 @@ export default function PaymentsPage() {
   }
 
   const getStatusBadge = (status: string) => {
+    const baseBadgeClass = "whitespace-nowrap px-2 py-0.5 text-xs font-semibold"
     switch (status) {
       case "PAID":
-        return <Badge className="bg-green-500 hover:bg-green-600">Pago</Badge>
+        return <Badge className={`${baseBadgeClass} bg-green-500 hover:bg-green-600`}>Pago</Badge>
       case "PAID_LATE":
-        return <Badge className="bg-yellow-600 hover:bg-yellow-700">Pago com Atraso</Badge>
+        return <Badge className={`${baseBadgeClass} bg-yellow-600 hover:bg-yellow-700`}>Pago com Atraso</Badge>
       case "OVERDUE":
-        return <Badge variant="destructive">Atrasado</Badge>
+        return <Badge variant="destructive" className={baseBadgeClass}>Atrasado</Badge>
       default:
-        return <Badge variant="secondary">Pendente</Badge>
+        return <Badge variant="secondary" className={baseBadgeClass}>Pendente</Badge>
     }
   }
 
