@@ -138,7 +138,7 @@ export function Sidebar() {
                 </Link>
 
                 <Link
-                  href="#"
+                  href="/clients"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover: text-foreground"
                 >
                   <Users className="h-5 w-5 transition-all" />
