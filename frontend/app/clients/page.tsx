@@ -78,8 +78,8 @@ export default function ClientsPage() {
 
         <Card>
           <CardContent>
-            <div className="rounded-md border">
-              <Table className="table-fixed w-full">
+            <div className="rounded-md border overflow-x-auto">
+              <Table className="table-fixed w-full min-w-[1000px]">
                 <colgroup>
                   <col className="w-[22%]" />
                   <col className="w-[16%]" />

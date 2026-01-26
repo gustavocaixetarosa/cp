@@ -213,8 +213,8 @@ export default function PaymentsPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="rounded-md border">
-              <Table className="table-fixed w-full">
+            <div className="rounded-md border overflow-x-auto">
+              <Table className="table-fixed w-full min-w-[1200px]">
                 <colgroup>
                   <col className="w-[4%]" />
                   <col className="w-[20%]" />
