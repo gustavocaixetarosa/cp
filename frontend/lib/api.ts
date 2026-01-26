@@ -61,11 +61,11 @@ function getAuthHeaders(): HeadersInit {
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
   };
-  
+
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
-  
+
   return headers;
 }
 
@@ -76,17 +76,29 @@ async function handleResponse<T>(response: Response): Promise<T> {
     logout();
     throw new Error('Sessão expirada. Faça login novamente.');
   }
-  
+
   if (!response.ok) {
     throw new Error(`Request failed with status ${response.status}`);
   }
-  
+
   // Some endpoints return 204 No Content
   if (response.status === 204) {
     return undefined as T;
   }
-  
-  return response.json();
+
+  const contentType = response.headers.get('content-type') || '';
+  const text = await response.text();
+
+  if (!text) {
+    return undefined as T;
+  }
+
+  if (contentType.includes('application/json')) {
+    return JSON.parse(text) as T;
+  }
+
+  // Fallback for non-JSON responses
+  return text as unknown as T;
 }
 
 export async function fetchClients(): Promise<Client[]> {
