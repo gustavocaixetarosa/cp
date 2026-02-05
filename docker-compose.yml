@@ -9,8 +9,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-cobranca}
       POSTGRES_USER: ${POSTGRES_USER:-gustavo}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-139150}
-    ports:
-      - "5432:5432"
+    # Removido a exposição da porta 5432 para evitar ataques externos
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
