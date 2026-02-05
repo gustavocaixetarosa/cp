@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import {
   Table,
@@ -14,7 +15,6 @@ import { Button } from "@/components/ui/button"
 import { Plus, Users } from "lucide-react"
 import { fetchAllClients, type Client } from "@/lib/api"
 import { ClientDetailsDialog } from "@/components/client-details-dialog"
-import { NewClientDialog } from "@/components/new-client-dialog"
 
 export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([])
@@ -72,7 +72,12 @@ export default function ClientsPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-bold text-gray-800">Clientes</h1>
-            <NewClientDialog onSuccess={loadClients} />
+            <Link href="/clients/new">
+              <Button size="sm" className="gap-2">
+                <Plus className="h-4 w-4" />
+                Novo Cliente
+              </Button>
+            </Link>
           </div>
         </div>
 
@@ -116,7 +121,12 @@ export default function ClientsPage() {
                             <p className="font-medium">Nenhum cliente cadastrado</p>
                             <p className="text-sm">Cadastre seu primeiro cliente para começar</p>
                           </div>
-                          <NewClientDialog onSuccess={loadClients} />
+                          <Link href="/clients/new">
+                            <Button className="gap-2">
+                              <Plus className="h-4 w-4" />
+                              Novo Cliente
+                            </Button>
+                          </Link>
                         </div>
                       </TableCell>
                     </TableRow>
