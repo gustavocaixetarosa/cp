@@ -41,6 +41,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { Checkbox } from "@/components/ui/checkbox"
 import { createPaymentGroup, fetchClients, fetchClientById, type Client } from "@/lib/api"
 import { cn } from "@/lib/utils"
 
@@ -55,6 +56,7 @@ const formSchema = z.object({
   monthlyInterestRate: z.string().optional(),
   firstInstallmentDueDate: z.date(),
   observation: z.string().optional(),
+  generateBoletos: z.boolean().optional(),
 })
 
 export default function NewPaymentGroupPage() {
@@ -76,6 +78,7 @@ export default function NewPaymentGroupPage() {
       lateFeeRate: "",
       monthlyInterestRate: "",
       observation: "",
+      generateBoletos: false,
     },
   })
 
@@ -194,6 +197,7 @@ export default function NewPaymentGroupPage() {
         monthlyInterestRate,
         firstInstallmentDueDate,
         observation: values.observation || undefined,
+        generateBoletos: values.generateBoletos,
       })
       
       // Success - redirect to payments page
@@ -495,6 +499,30 @@ export default function NewPaymentGroupPage() {
                       />
                     </FormControl>
                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Generate Boletos */}
+              <FormField
+                control={form.control}
+                name="generateBoletos"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 bg-muted/50">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="font-semibold">
+                        Gerar boletos automaticamente
+                      </FormLabel>
+                      <FormDescription>
+                        Ao ativar esta opção, os boletos serão gerados automaticamente para cada parcela através do Banco Inter
+                      </FormDescription>
+                    </div>
                   </FormItem>
                 )}
               />
